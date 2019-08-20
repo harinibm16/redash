@@ -142,7 +142,7 @@ class QueryBigQueryResultPrice(BaseResource):
             return error_response(u'Missing parameter value for: {}'
                                   .format(u", ".join(parameterized_query.missing_params)))
 
-        if not has_access(data_source, self.current_user, not_view_only):
+        if not has_access(data_source.groups, self.current_user, not_view_only):
             return 'You do not have permission to run queries with this data source.', 403
 
         bigQuery = BigQuery(data_source.options)
