@@ -108,7 +108,7 @@ class YandexMetrica(BaseSQLQueryRunner):
 
         return schema.values()
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         self._send_query('management/v1/{0}'.format(self.list_path))
 
     def _send_query(self, path='stat/v1/data', **kwargs):

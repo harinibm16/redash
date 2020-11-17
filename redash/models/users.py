@@ -5,6 +5,7 @@ import time
 from functools import reduce
 from operator import or_
 
+from cryptography.fernet import Fernet
 from flask import current_app as app, url_for, request_started
 from flask_login import current_user, AnonymousUserMixin, UserMixin
 from passlib.apps import custom_app_context as pwd_context
@@ -15,7 +16,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy_utils import EmailType
 from sqlalchemy_utils.models import generic_repr
 
-from redash import redis_connection
+from redash import redis_connection, settings
 from redash.utils import generate_token, utcnow, dt_from_timestamp
 
 from .base import db, Column, GFKBase
@@ -98,6 +99,8 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
                                    default=None)
     is_invitation_pending = json_cast_property(db.Boolean(True), 'details', 'is_invitation_pending', default=False)
     is_email_verified = json_cast_property(db.Boolean(True), 'details', 'is_email_verified', default=True)
+    credentials = Column(MutableDict.as_mutable(postgresql.JSON), nullable=True,
+                                           server_default='{}', default={})
 
     __tablename__ = 'users'
     __table_args__ = (
@@ -145,6 +148,7 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
             'active_at': self.active_at,
             'is_invitation_pending': self.is_invitation_pending,
             'is_email_verified': self.is_email_verified,
+            'credentials': self.credentials,
         }
 
         if self.password_hash is None:
@@ -238,6 +242,21 @@ class User(TimestampMixin, db.Model, BelongsToOrgMixin, UserMixin, PermissionsCh
         ).hexdigest()
         return u"{0}-{1}".format(self.id, identity)
 
+    def update_credentials(self, project_id, cred):
+        key = settings.FERNET_SECRET_KEY
+        fernet = Fernet(key)
+        data = cred.encode()
+        self.credentials[project_id] = fernet.encrypt(data)
+        db.session.commit()
+
+    def fetch_credentials(self, project_id):
+        key = settings.FERNET_SECRET_KEY
+        fernet = Fernet(key)
+        encrypted_cred = self.credentials[project_id]
+        data = encrypted_cred.encode()
+        cred = fernet.decrypt(data)
+        return cred
+
 
 @python_2_unicode_compatible
 @generic_repr('id', 'name', 'type', 'org_id')
@@ -286,6 +305,10 @@ class Group(db.Model, BelongsToOrgMixin):
     def find_by_name(cls, org, group_names):
         result = cls.query.filter(cls.org == org, cls.name.in_(group_names))
         return list(result)
+
+    def update_credentials(self, cred):
+            self.credentials = cred
+            db.session.commit()
 
 
 @generic_repr('id', 'object_type', 'object_id', 'access_type', 'grantor_id', 'grantee_id')

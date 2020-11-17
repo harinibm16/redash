@@ -87,10 +87,10 @@ class BaseQueryRunner(object):
         annotated_query = u"/* {} */ {}".format(annotation, query)
         return annotated_query
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         if self.noop_query is None:
             raise NotImplementedError()
-        data, error = self.run_query(self.noop_query, None)
+        data, error = self.run_query(self.noop_query, user)
 
         if error is not None:
             raise Exception(error)
@@ -116,7 +116,7 @@ class BaseQueryRunner(object):
 
         return new_columns
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
         raise NotSupported()
 
     def _run_query_internal(self, query):
@@ -137,7 +137,7 @@ class BaseQueryRunner(object):
 
 class BaseSQLQueryRunner(BaseQueryRunner):
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
         schema_dict = {}
         self._get_tables(schema_dict)
         if settings.SCHEMA_RUN_TABLE_SIZE_CALCULATIONS and get_stats:

@@ -51,7 +51,7 @@ TYPES_MAP = dict(
 
 class Salesforce(BaseQueryRunner):
     should_annotate_query = False
-    
+
     @classmethod
     def enabled(cls):
         return enabled
@@ -84,7 +84,7 @@ class Salesforce(BaseQueryRunner):
             "secret": ["password", "token"]
         }
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         response = self._get_sf().describe()
         if response is None:
             raise Exception("Failed describing objects.")
@@ -169,7 +169,7 @@ class Salesforce(BaseQueryRunner):
             json_data = None
         return json_data, error
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
         sf = self._get_sf()
         response = sf.describe()
         if response is None:

@@ -72,7 +72,7 @@ class TreasureData(BaseQueryRunner):
     def type(cls):
         return "treasuredata"
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
         schema = {}
         if self.configuration.get('get_schema', False):
             try:

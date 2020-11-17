@@ -55,7 +55,7 @@ class DynamoDBSQL(BaseSQLQueryRunner):
             "secret": ["secret_key"]
         }
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         engine = self._connect()
         list(engine.connection.list_tables())
 

@@ -133,7 +133,7 @@ class GoogleAnalytics(BaseSQLQueryRunner):
 
         return schema.values()
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         try:
             service = self._get_analytics_service()
             service.management().accounts().list().execute()

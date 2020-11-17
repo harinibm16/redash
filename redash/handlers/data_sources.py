@@ -157,7 +157,7 @@ class DataSourceSchemaResource(BaseResource):
         response = {}
 
         try:
-            response['schema'] = data_source.get_schema(refresh)
+            response['schema'] = data_source.get_schema(self.current_user, refresh)
         except NotSupported:
             response['error'] = {
                 'code': 1,
@@ -211,7 +211,7 @@ class DataSourceTestResource(BaseResource):
 
         response = {}
         try:
-            data_source.query_runner.test_connection()
+            data_source.query_runner.test_connection(user=self.current_user)
         except Exception as e:
             response = {"message": text_type(e), "ok": False}
         else:

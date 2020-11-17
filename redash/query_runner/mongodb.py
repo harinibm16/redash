@@ -166,7 +166,7 @@ class MongoDB(BaseQueryRunner):
 
         return db_connection[self.db_name]
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         db = self._get_db()
         if not db.command("connectionStatus")["ok"]:
             raise Exception("MongoDB connection error")
@@ -208,7 +208,7 @@ class MongoDB(BaseQueryRunner):
             self._merge_property_names(columns, d)
         return columns
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
         schema = {}
         db = self._get_db()
         for collection_name in db.collection_names():

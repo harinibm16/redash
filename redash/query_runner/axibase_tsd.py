@@ -174,7 +174,7 @@ class AxibaseTSD(BaseQueryRunner):
 
         return json_data, error
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
         connection = atsd_client.connect_url(self.url,
                                              self.configuration.get('username'),
                                              self.configuration.get('password'),

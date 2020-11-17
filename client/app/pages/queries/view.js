@@ -153,6 +153,15 @@ function QueryViewCtrl(
     $scope.lockButton(true);
   };
 
+  $scope.authorizeBigQuery = () => {
+    if (!$scope.canExecuteQuery()) {
+      return;
+    }
+    // To prevent opening the same tab, name must be unique for each browser
+    const tabName = 'duplicatedQueryTab' + Math.random().toString();
+    $window.open(`bqauthorize/${$scope.dataSource.id}`, tabName);
+  };
+
   $scope.executeQuery = () => {
     if (!$scope.canExecuteQuery()) {
       return;

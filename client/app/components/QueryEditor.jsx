@@ -56,6 +56,7 @@ class QueryEditor extends React.Component {
     updateDataSource: PropTypes.func.isRequired,
     isNotBigQuery: PropTypes.bool.isRequired,
     getCostQuery: PropTypes.func.isRequired,
+    authorizeBigQuery: PropTypes.func.isRequired,
     canExecuteQuery: PropTypes.bool.isRequired,
     executeQuery: PropTypes.func.isRequired,
     queryExecuting: PropTypes.bool.isRequired,
@@ -291,6 +292,18 @@ class QueryEditor extends React.Component {
                   </option>
                 ))}
               </select>
+              <button
+                type="button"
+                className={'btn btn-default m-l-5' + (isExecuteDisabled ? ' disabled' : '')
+                + (isNotBigQuery ? ' hidden' : '')}
+                disabled={isExecuteDisabled}
+                onClick={this.props.authorizeBigQuery}
+                data-test="Authorize"
+                title="BigQuery Authorization"
+              >
+                <span className="fa fa-key fa-fw" />
+                <span className="hidden-xs m-l-5">Auth</span>
+              </button>
               <button
                 type="button"
                 className={'btn btn-success m-l-5' + (isExecuteDisabled ? ' disabled' : '')

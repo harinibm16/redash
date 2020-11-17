@@ -145,14 +145,14 @@ class DataSource(BelongsToOrgMixin, db.Model):
 
         return res
 
-    def get_schema(self, refresh=False):
+    def get_schema(self, user=None, refresh=False):
         cache = None
         if not refresh:
             cache = redis_connection.get(self._schema_key)
 
         if cache is None:
             query_runner = self.query_runner
-            schema = sorted(query_runner.get_schema(get_stats=refresh), key=lambda t: t['name'])
+            schema = sorted(query_runner.get_schema(user, get_stats=refresh), key=lambda t: t['name'])
 
             redis_connection.set(self._schema_key, json_dumps(schema))
         else:

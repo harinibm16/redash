@@ -7,9 +7,10 @@ from base64 import b64decode
 import httplib2
 import requests
 
-from redash import settings
+from redash import settings, models
 from redash.query_runner import *
 from redash.utils import json_dumps, json_loads
+from redash import models
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ try:
     from apiclient.discovery import build
     from apiclient.errors import HttpError
     from oauth2client.service_account import ServiceAccountCredentials
+    from oauth2client.client import AccessTokenCredentials
 
     enabled = True
 except ImportError:
@@ -99,9 +101,13 @@ class BigQuery(BaseQueryRunner):
                     'type': 'string',
                     'title': 'Project ID'
                 },
-                'jsonKeyFile': {
-                    "type": "string",
-                    'title': 'JSON Key File'
+                'clientId': {
+                    'type': 'string',
+                    'title': 'Client ID'
+                },
+                'clientSecret': {
+                    'type': 'string',
+                    'title': 'Client Secret'
                 },
                 'totalMBytesProcessedLimit': {
                     "type": "number",
@@ -129,20 +135,37 @@ class BigQuery(BaseQueryRunner):
                     "title": "Maximum Billing Tier"
                 }
             },
-            'required': ['jsonKeyFile', 'projectId'],
-            "order": ['projectId', 'jsonKeyFile', 'loadSchema', 'useStandardSql', 'location', 'totalMBytesProcessedLimit', 'maximumBillingTier', 'userDefinedFunctionResourceUri'],
-            'secret': ['jsonKeyFile']
+            'required': ['projectId', 'clientId', 'clientSecret'],
+            "order": ['projectId', 'loadSchema', 'useStandardSql', 'clientId', 'clientSecret', 'location',
+                      'totalMBytesProcessedLimit', 'maximumBillingTier', 'userDefinedFunctionResourceUri'],
         }
 
-    def _get_bigquery_service(self):
-        scope = [
-            "https://www.googleapis.com/auth/bigquery",
-            "https://www.googleapis.com/auth/drive"
-        ]
+    def _get_bigquery_service(self, user):
 
-        key = json_loads(b64decode(self.configuration['jsonKeyFile']))
+        client_id = self.configuration["clientId"]
+        client_secret = self.configuration["clientSecret"]
+        project_id = self.configuration["projectId"]
 
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(key, scope)
+        if project_id not in user.credentials:
+            return None
+
+        refresh_token = user.fetch_credentials(project_id)
+
+        params = {
+            "grant_type": "refresh_token",
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "refresh_token": refresh_token
+        }
+        authorization_url = "https://www.googleapis.com/oauth2/v4/token"
+        r = requests.post(authorization_url, data=params)
+        if r.ok:
+            tok = r.json()['access_token']
+        else:
+            return None
+
+        creds = AccessTokenCredentials(tok,
+                                       'my-user-agent/1.0')
         http = httplib2.Http(timeout=settings.BIGQUERY_HTTP_TIMEOUT)
         http = creds.authorize(http)
 
@@ -259,8 +282,10 @@ class BigQuery(BaseQueryRunner):
 
         return columns
 
-    def get_mbs_processed(self, query):
-        bigquery_service = self._get_bigquery_service()
+    def get_mbs_processed(self, query, user):
+        bigquery_service = self._get_bigquery_service(user)
+        if bigquery_service is None:
+            return None, "User credentials is expired. Please click on Auth button to get new credentials."
         jobs = bigquery_service.jobs()
 
         try:
@@ -273,11 +298,15 @@ class BigQuery(BaseQueryRunner):
 
         return json_data, error
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user, get_stats=False):
         if not self.configuration.get('loadSchema', False):
             return []
 
-        service = self._get_bigquery_service()
+        service = self._get_bigquery_service(user)
+
+        if service is None:
+            return
+
         project_id = self._get_project_id()
         datasets = service.datasets().list(projectId=project_id).execute()
         schema = []
@@ -305,7 +334,9 @@ class BigQuery(BaseQueryRunner):
     def run_query(self, query, user):
         logger.debug("BigQuery got query: %s", query)
 
-        bigquery_service = self._get_bigquery_service()
+        bigquery_service = self._get_bigquery_service(user)
+        if bigquery_service is None:
+            return None, "User credentials is expired. Please click on Auth button to get new credentials."
         jobs = bigquery_service.jobs()
 
         try:

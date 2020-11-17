@@ -63,7 +63,7 @@ class Graphite(BaseQueryRunner):
         self.verify = self.configuration.get("verify", True)
         self.base_url = "%s/render?format=json&" % self.configuration['url']
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         r = requests.get("{}/render".format(self.configuration['url']), auth=self.auth, verify=self.verify)
         if r.status_code != 200:
             raise Exception("Got invalid response from Graphite (http status code: {0}).".format(r.status_code))

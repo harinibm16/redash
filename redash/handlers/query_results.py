@@ -116,10 +116,10 @@ class QueryBigQueryResultPrice(BaseResource):
 
         big_query = BigQuery(data_source.options)
 
-        data, error = big_query.get_mbs_processed(parameterized_query.text)
+        data, error = big_query.get_mbs_processed(parameterized_query.text, self.current_user)
 
         if error is not None:
-            if error.get('error'):
+            if 'error' in error:
                 return error['error'].get('message'), error['error'].get('code')
             else:
                 return error, 400

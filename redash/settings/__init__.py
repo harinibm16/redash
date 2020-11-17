@@ -61,6 +61,8 @@ INVITATION_TOKEN_MAX_AGE = int(os.environ.get("REDASH_INVITATION_TOKEN_MAX_AGE",
 SECRET_KEY = os.environ.get("REDASH_COOKIE_SECRET", "c292a0a3aa32397cdb050e233733900f")
 # The secret key to use when encrypting data source options
 DATASOURCE_SECRET_KEY = os.environ.get('REDASH_SECRET_KEY', SECRET_KEY)
+#The secret key to use when encrypting and decrypting big query user credentials
+FERNET_SECRET_KEY = os.environ.get('REDASH_FERNET_KEY')
 
 # Whether and how to redirect non-HTTP requests to HTTPS. Disabled by default.
 ENFORCE_HTTPS = parse_boolean(os.environ.get("REDASH_ENFORCE_HTTPS", "false"))

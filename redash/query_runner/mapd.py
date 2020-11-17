@@ -104,7 +104,7 @@ class Mapd(BaseSQLQueryRunner):
 
         return schema.values()
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         connection = self.connect_database()
         try:
             tables = connection.get_tables()

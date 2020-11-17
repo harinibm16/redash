@@ -63,7 +63,7 @@ class Qubole(BaseQueryRunner):
     def enabled(cls):
         return enabled
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         headers = self._get_header()
         r = requests.head("%s/api/latest/users" % self.configuration.get('endpoint'), headers=headers)
         r.status_code == 200
@@ -117,7 +117,7 @@ class Qubole(BaseQueryRunner):
 
         return json_data, error
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
         schemas = {}
         try:
             headers = self._get_header()

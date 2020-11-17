@@ -212,7 +212,7 @@ class Python(BaseQueryRunner):
     def get_current_user(self):
         return self._current_user.to_dict()
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         pass
 
     def run_query(self, query, user):

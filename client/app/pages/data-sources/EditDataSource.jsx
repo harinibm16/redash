@@ -5,13 +5,14 @@ import { react2angular } from 'react2angular';
 import Modal from 'antd/lib/modal';
 import { DataSource, IMG_ROOT } from '@/services/data-source';
 import navigateTo from '@/services/navigateTo';
-import { $route } from '@/services/ng';
+import { $http, $route } from '@/services/ng';
 import notification from '@/services/notification';
 import PromiseRejectionError from '@/lib/promise-rejection-error';
 import LoadingState from '@/components/items-list/components/LoadingState';
 import DynamicForm from '@/components/dynamic-form/DynamicForm';
 import helper from '@/components/dynamic-form/dynamicFormHelper';
 import { HelpTrigger, TYPES as HELP_TRIGGER_TYPES } from '@/components/HelpTrigger';
+import { currentUser } from '@/services/auth';
 
 class EditDataSource extends React.Component {
   static propTypes = {
@@ -80,17 +81,45 @@ class EditDataSource extends React.Component {
 
   testConnection = (callback) => {
     const { dataSource } = this.state;
-    DataSource.test({ id: dataSource.id }, (httpResponse) => {
-      if (httpResponse.ok) {
-        notification.success('Success');
-      } else {
-        notification.error('Connection Test Failed:', httpResponse.message, { duration: 10 });
-      }
-      callback();
-    }, () => {
-      notification.error('Connection Test Failed:', 'Unknown error occurred while performing connection test. Please try again later.', { duration: 10 });
-      callback();
-    });
+
+    const runTest = () => {
+      DataSource.test({ id: dataSource.id }, (httpResponse) => {
+        if (httpResponse.ok) {
+          notification.success('Success');
+        } else {
+          notification.error('Connection Test Failed:', httpResponse.message, { duration: 10 });
+        }
+        callback();
+      }, () => {
+        notification.error('Connection Test Failed:', 'Unknown error occurred while performing connection test. Please try again later.', { duration: 10 });
+        callback();
+      });
+    };
+
+    if (dataSource.type === 'bigquery') {
+      $http
+        .get(`api/users/${currentUser.id}`)
+        .then(cred => cred.data.credentials)
+        .then(
+          (result) => {
+            $http
+              .get(`api/data_sources/${dataSource.id}`)
+              .then(response => response.data.options.projectId)
+              .then(
+                (projectId) => {
+                  if (result[projectId] === undefined) {
+                    window.location.pathname = `/bqauthorize/${dataSource.id}`;
+                    window.open(window.location.href);
+                  } else {
+                    runTest();
+                  }
+                },
+              );
+          },
+        );
+    } else {
+      runTest();
+    }
   };
 
   renderForm() {

@@ -185,7 +185,7 @@ class GoogleSpreadsheet(BaseQueryRunner):
         spreadsheetservice.login()
         return spreadsheetservice
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         service = self._get_spreadsheet_service()
         test_spreadsheet_key = '1S0mld7LMbUad8LYlo13Os9f7eNjw57MqVC0YiCd1Jis'
         try:

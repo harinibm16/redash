@@ -109,7 +109,7 @@ class Couchbase(BaseQueryRunner):
     def enabled(cls):
         return True
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         result = self.call_service(self.noop_query, '')
 
     def get_buckets(self, query, name_param):
@@ -124,7 +124,7 @@ class Couchbase(BaseQueryRunner):
 
         return schema.values()
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
 
         try:
             # Try fetch from Analytics

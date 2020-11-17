@@ -163,7 +163,7 @@ class JSON(BaseHTTPQueryRunner):
         super(JSON, self).__init__(configuration)
         self.syntax = 'yaml'
 
-    def test_connection(self):
+    def test_connection(self, user=None):
         pass
 
     def run_query(self, query, user):

@@ -72,7 +72,7 @@ class Presto(BaseQueryRunner):
     def type(cls):
         return "presto"
 
-    def get_schema(self, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
         schema = {}
         query = """
         SELECT table_schema, table_name, column_name
