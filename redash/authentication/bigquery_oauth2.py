@@ -6,13 +6,14 @@ from flask_login import login_required, current_user
 from redash.authentication import current_org
 from redash.query_runner import big_query
 import requests
+import json
 
 logger = logging.getLogger('bigquery_oauth2')
 
 blueprint = Blueprint('bigquery_oauth2', __name__)
 
 
-def get_google_oauth(clientid, clientsecret) :
+def get_google_oauth(clientid, clientsecret, dsid=None) :
     oauth = OAuth()
     google = oauth.remote_app(
         'google',
@@ -20,6 +21,9 @@ def get_google_oauth(clientid, clientsecret) :
         consumer_secret=clientsecret,
         request_token_params={
             'scope': 'https://www.googleapis.com/auth/bigquery https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/gmail.labels',
+            'state' : dsid,
+            'access_type' : 'offline',
+            'prompt': 'consent',
         },
         base_url='https://www.googleapis.com/oauth2/v1/',
         request_token_url=None,
@@ -37,13 +41,14 @@ def bqauthorize(dsid):
     ds = data_source.to_dict(all=True)
     client_id = ds["options"]["clientId"]
     client_secret = ds["options"]["clientSecret"]
-    google = get_google_oauth(client_id, client_secret)
-    return google.authorize(callback=url_for(".bqauthorized", _external=True, dsid=dsid))
+    google = get_google_oauth(client_id, client_secret, dsid)
+    return google.authorize(callback=url_for(".bqauthorized", _external=True))
 
 
-@blueprint.route('/bqauthorized/<dsid>', endpoint="bqauthorized")
+@blueprint.route('/bqauthorized', endpoint="bqauthorized")
 @login_required
-def bqauthorized(dsid):
+def bqauthorized():
+    dsid = request.args['state']
     data_source = models.DataSource.get_by_id_and_org(dsid, current_org)
     ds = data_source.to_dict(all=True)
     client_id = ds["options"]["clientId"]
@@ -57,7 +62,5 @@ def bqauthorized(dsid):
             request.args['error_description']
         )
     current_user.update_credentials(project_id, resp["refresh_token"])
+
     return redirect(url_for("redash.index"))
-
-
-
