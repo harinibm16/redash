@@ -117,7 +117,7 @@ class Qubole(BaseQueryRunner):
 
         return json_data, error
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False, user=None):
         schemas = {}
         try:
             headers = self._get_header()

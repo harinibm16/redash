@@ -70,7 +70,7 @@ class Cassandra(BaseQueryRunner):
     def type(cls):
         return "Cassandra"
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False, user=None):
         query = """
         select release_version from system.local;
         """

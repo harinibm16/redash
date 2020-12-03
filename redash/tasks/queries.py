@@ -258,7 +258,7 @@ def refresh_schema(data_source_id):
     logger.info(u"task=refresh_schema state=start ds_id=%s", ds.id)
     start_time = time.time()
     try:
-        ds.get_schema(user=None, refresh=True)
+        ds.get_schema(refresh=True)
         logger.info(u"task=refresh_schema state=finished ds_id=%s runtime=%.2f", ds.id, time.time() - start_time)
         statsd_client.incr('refresh_schema.success')
     except SoftTimeLimitExceeded:

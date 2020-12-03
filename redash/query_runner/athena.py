@@ -182,7 +182,7 @@ class Athena(BaseQueryRunner):
                             schema[table_name]['columns'].append(partition['Name'])
         return schema.values()
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False, user=None):
         if self.configuration.get('glue', False):
             return self.__get_schema_from_glue()
 

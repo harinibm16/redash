@@ -126,7 +126,7 @@ class AzureKusto(BaseQueryRunner):
 
         return json_data, error
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False, user=None):
         query = ".show database schema as json"
 
         results, error = self.run_query(query, None)

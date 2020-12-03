@@ -63,7 +63,7 @@ class Phoenix(BaseQueryRunner):
     def type(cls):
         return "phoenix"
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False, user=None):
         schema = {}
         query = """
         SELECT TABLE_SCHEM, TABLE_NAME, COLUMN_NAME

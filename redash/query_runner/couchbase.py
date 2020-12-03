@@ -124,7 +124,7 @@ class Couchbase(BaseQueryRunner):
 
         return schema.values()
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False, user=None):
 
         try:
             # Try fetch from Analytics

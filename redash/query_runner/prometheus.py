@@ -83,7 +83,7 @@ class Prometheus(BaseQueryRunner):
         resp = requests.get(self.configuration.get("url", None))
         return resp.ok
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False, user=None):
         base_url = self.configuration["url"]
         metrics_path = '/api/v1/label/__name__/values'
         response = requests.get(base_url + metrics_path)

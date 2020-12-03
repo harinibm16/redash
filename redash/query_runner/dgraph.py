@@ -122,7 +122,7 @@ class Dgraph(BaseQueryRunner):
 
         return json_data, error
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False, user=None):
         """Queries Dgraph for all the predicates, their types, their tokenizers, etc.
 
         Dgraph only has one schema, and there's no such things as columns"""

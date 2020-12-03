@@ -103,7 +103,7 @@ class Kylin(BaseQueryRunner):
 
         return json_dumps({'columns': columns, 'rows': rows}), None
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False, user=None):
         url = self.configuration['url']
         kylinuser = self.configuration['user']
         kylinpass = self.configuration['password']

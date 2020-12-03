@@ -169,7 +169,7 @@ class Salesforce(BaseQueryRunner):
             json_data = None
         return json_data, error
 
-    def get_schema(self, user=None, get_stats=False):
+    def get_schema(self, get_stats=False,  user=None):
         sf = self._get_sf()
         response = sf.describe()
         if response is None:
