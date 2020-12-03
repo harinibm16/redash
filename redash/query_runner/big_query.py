@@ -18,7 +18,6 @@ try:
     import apiclient.errors
     from apiclient.discovery import build
     from apiclient.errors import HttpError
-    from oauth2client.service_account import ServiceAccountCredentials
     from oauth2client.client import AccessTokenCredentials
 
     enabled = True
@@ -298,7 +297,7 @@ class BigQuery(BaseQueryRunner):
 
         return json_data, error
 
-    def get_schema(self, user, get_stats=False):
+    def get_schema(self, user=None, get_stats=False):
         if not self.configuration.get('loadSchema', False):
             return []
 
@@ -315,11 +314,14 @@ class BigQuery(BaseQueryRunner):
             tables = service.tables().list(projectId=project_id, datasetId=dataset_id).execute()
             while True:
                 for table in tables.get('tables', []):
-                    table_data = service.tables().get(projectId=project_id,
-                                                      datasetId=dataset_id,
-                                                      tableId=table['tableReference']['tableId']).execute()
-                    table_schema = self._get_columns_schema(table_data)
-                    schema.append(table_schema)
+                    try:
+                        table_data = service.tables().get(projectId=project_id,
+                                                          datasetId=dataset_id,
+                                                          tableId=table['tableReference']['tableId']).execute()
+                        table_schema = self._get_columns_schema(table_data)
+                        schema.append(table_schema)
+                    except apiclient.errors.HttpError as e:
+                        continue
 
                 next_token = tables.get('nextPageToken', None)
                 if next_token is None:
